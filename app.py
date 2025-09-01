@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import numpy as np
 
+
 app = Flask(__name__)
 
 
@@ -12,6 +13,7 @@ def index():
 @app.route('/calculate', methods=['POST'])
 def calculate():
     # Get coefficients from request
+    global real_part
     data = request.get_json()
     a = float(data['a'])
     b = float(data['b'])
