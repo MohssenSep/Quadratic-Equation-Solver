@@ -149,80 +149,118 @@
                 return;
             }
 
-            fetch('/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ a, b, c }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Display roots and discriminant
-                document.getElementById('root-status').textContent = data.root_status;
+            // Calculate discriminant
+            const discriminant = b * b - 4 * a * c;
 
-                if (data.discriminant >= 0) {
-                    const rootsText = data.roots.length > 1
-                        ? `x₁ = ${data.roots[0].toFixed(1)}, x₂ = ${data.roots[1].toFixed(1)}`
-                        : `x = ${data.roots[0].toFixed(1)}`;
-                    document.getElementById('roots').textContent = `Roots: ${rootsText}`;
+            // Calculate roots
+            let roots = [];
+            let rootStatus = "";
+
+            if (discriminant > 0) {
+                const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                roots = [x1, x2];
+                rootStatus = "Two real roots";
+            } else if (discriminant === 0) {
+                const x = -b / (2 * a);
+                roots = [x];
+                rootStatus = "One real root (double root)";
+            } else {
+                const realPart = -b / (2 * a);
+                const imagPart = Math.sqrt(Math.abs(discriminant)) / (2 * a);
+                roots = [`${realPart.toFixed(1)} + ${imagPart.toFixed(1)}i`, `${realPart.toFixed(1)} - ${imagPart.toFixed(1)}i`];
+                rootStatus = "Two complex roots";
+            }
+
+            // Generate points for the curve
+            let xMin, xMax;
+            if (discriminant >= 0) {
+                if (roots.length === 2) {
+                    xMin = Math.min(...roots) - 3;
+                    xMax = Math.max(...roots) + 3;
                 } else {
-                    document.getElementById('roots').textContent = `Roots: ${data.roots[0]}, ${data.roots[1]}`;
+                    xMin = roots[0] - 3;
+                    xMax = roots[0] + 3;
                 }
+            } else {
+                const realPart = -b / (2 * a);
+                xMin = realPart - 3;
+                xMax = realPart + 3;
+            }
 
-                document.getElementById('discriminant').textContent = `Discriminant: ${data.discriminant.toFixed(1)}`;
-                document.getElementById('results').style.display = 'block';
+            // Generate 100 points for smooth curve
+            const xValues = [];
+            const yValues = [];
+            const numPoints = 100;
+            const step = (xMax - xMin) / (numPoints - 1);
 
-                // Plot the curve
-                const trace = {
-                    x: data.x_values,
-                    y: data.y_values,
+            for (let i = 0; i < numPoints; i++) {
+                const x = xMin + i * step;
+                const y = a * x * x + b * x + c;
+                xValues.push(x);
+                yValues.push(y);
+            }
+
+            // Display roots and discriminant
+            document.getElementById('root-status').textContent = rootStatus;
+
+            if (discriminant >= 0) {
+                const rootsText = roots.length > 1
+                    ? `x₁ = ${roots[0].toFixed(1)}, x₂ = ${roots[1].toFixed(1)}`
+                    : `x = ${roots[0].toFixed(1)}`;
+                document.getElementById('roots').textContent = `Roots: ${rootsText}`;
+            } else {
+                document.getElementById('roots').textContent = `Roots: ${roots[0]}, ${roots[1]}`;
+            }
+
+            document.getElementById('discriminant').textContent = `Discriminant: ${discriminant.toFixed(1)}`;
+            document.getElementById('results').style.display = 'block';
+
+            // Plot the curve
+            const trace = {
+                x: xValues,
+                y: yValues,
+                type: 'scatter',
+                mode: 'lines',
+                name: 'y = ax² + bx + c',
+                line: {
+                    color: 'rgb(55, 128, 191)',
+                    width: 3
+                }
+            };
+
+            // Add points for roots if they are real
+            const traces = [trace];
+
+            if (discriminant >= 0) {
+                const rootPoints = {
+                    x: roots.map(root => parseFloat(root)),
+                    y: roots.map(_ => 0),
                     type: 'scatter',
-                    mode: 'lines',
-                    name: 'y = ax² + bx + c',
-                    line: {
-                        color: 'rgb(55, 128, 191)',
-                        width: 3
+                    mode: 'markers',
+                    name: 'Roots',
+                    marker: {
+                        color: 'red',
+                        size: 10
                     }
                 };
+                traces.push(rootPoints);
+            }
 
-                // Add points for roots if they are real
-                const traces = [trace];
+            const layout = {
+                title: 'Quadratic Function',
+                xaxis: {
+                    title: 'x'
+                },
+                yaxis: {
+                    title: 'y'
+                },
+                hovermode: 'closest',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'white'
+            };
 
-                if (data.discriminant >= 0) {
-                    const rootPoints = {
-                        x: data.roots.map(root => parseFloat(root)),
-                        y: data.roots.map(_ => 0),
-                        type: 'scatter',
-                        mode: 'markers',
-                        name: 'Roots',
-                        marker: {
-                            color: 'red',
-                            size: 10
-                        }
-                    };
-                    traces.push(rootPoints);
-                }
-
-                const layout = {
-                    title: 'Quadratic Function',
-                    xaxis: {
-                        title: 'x'
-                    },
-                    yaxis: {
-                        title: 'y'
-                    },
-                    hovermode: 'closest',
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'white'
-                };
-
-                Plotly.newPlot('plot', traces, layout);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while calculating. Please try again.');
-            });
+            Plotly.newPlot('plot', traces, layout);
         }
     </script>
 </body>
