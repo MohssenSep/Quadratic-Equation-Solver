@@ -68,7 +68,26 @@ document.getElementById('quadraticForm').addEventListener('submit', function(e) 
 // Function to draw the quadratic function graph
 function drawGraph(a, b, c, discriminant) {
     const canvas = document.getElementById('graphCanvas');
+    
+    // Error handling: Check if canvas exists
+    if (!canvas) {
+        console.error('Graph canvas element not found');
+        return;
+    }
+    
+    // Error handling: Check canvas dimensions
+    if (canvas.width === 0 || canvas.height === 0) {
+        console.error('Canvas has invalid dimensions:', canvas.width, 'x', canvas.height);
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
+    
+    // Error handling: Check if 2D context is available
+    if (!ctx) {
+        console.error('Failed to get 2D context from canvas');
+        return;
+    }
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -123,13 +142,30 @@ function drawGraph(a, b, c, discriminant) {
     if (yMin > 0 && yMin < yRange * 0.3) yMin = -yRange * 0.1;
     if (yMax < 0 && yMax > -yRange * 0.3) yMax = yRange * 0.1;
     
+    // Ensure minimum range to prevent division by zero
+    const MIN_RANGE = 0.0001;
+    if (Math.abs(xMax - xMin) < MIN_RANGE) {
+        const center = (xMax + xMin) / 2;
+        xMin = center - MIN_RANGE / 2;
+        xMax = center + MIN_RANGE / 2;
+    }
+    if (Math.abs(yMax - yMin) < MIN_RANGE) {
+        const center = (yMax + yMin) / 2;
+        yMin = center - MIN_RANGE / 2;
+        yMax = center + MIN_RANGE / 2;
+    }
+    
     // Helper function to convert math coordinates to canvas coordinates
     function toCanvasX(x) {
-        return padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding);
+        const range = xMax - xMin;
+        if (range === 0) return padding + (width - 2 * padding) / 2;
+        return padding + ((x - xMin) / range) * (width - 2 * padding);
     }
     
     function toCanvasY(y) {
-        return height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding);
+        const range = yMax - yMin;
+        if (range === 0) return height - padding - (height - 2 * padding) / 2;
+        return height - padding - ((y - yMin) / range) * (height - 2 * padding);
     }
     
     // Draw grid
@@ -243,8 +279,14 @@ function drawGraph(a, b, c, discriminant) {
     // Add axis labels
     ctx.fillStyle = '#333';
     ctx.font = '14px Arial';
-    ctx.fillText('x', width - padding + 10, toCanvasY(0) + 5);
-    ctx.fillText('y', toCanvasX(0) + 5, padding - 10);
+    
+    // X-axis label - place at bottom-right if y=0 is not visible, otherwise near the x-axis
+    const xLabelY = (yMin <= 0 && yMax >= 0) ? toCanvasY(0) + 5 : height - padding + 5;
+    ctx.fillText('x', width - padding + 10, xLabelY);
+    
+    // Y-axis label - place at top-left if x=0 is not visible, otherwise near the y-axis
+    const yLabelX = (xMin <= 0 && xMax >= 0) ? toCanvasX(0) + 5 : padding + 5;
+    ctx.fillText('y', yLabelX, padding - 10);
     
     // Add scale markers on axes
     ctx.fillStyle = '#666';
