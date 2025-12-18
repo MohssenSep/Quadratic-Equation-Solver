@@ -254,21 +254,19 @@ function drawGraph(a, b, c, discriminant) {
     const xMarkerStep = (xMax - xMin) / 5;
     for (let i = 0; i <= 5; i++) {
         const x = xMin + i * xMarkerStep;
-        if (Math.abs(x) > 0.01 || x === 0) {
-            const canvasX = toCanvasX(x);
-            const canvasY = toCanvasY(0);
-            ctx.fillText(x.toFixed(1), canvasX - 10, canvasY + 20);
-        }
+        const canvasX = toCanvasX(x);
+        // Place marker at bottom of canvas if x-axis not visible, otherwise near x-axis
+        const markerY = (yMin <= 0 && yMax >= 0) ? toCanvasY(0) + 20 : height - padding + 15;
+        ctx.fillText(x.toFixed(1), canvasX - 10, markerY);
     }
     
     // Y-axis markers
     const yMarkerStep = (yMax - yMin) / 5;
     for (let i = 0; i <= 5; i++) {
         const y = yMin + i * yMarkerStep;
-        if (Math.abs(y) > 0.01 || y === 0) {
-            const canvasX = toCanvasX(0);
-            const canvasY = toCanvasY(y);
-            ctx.fillText(y.toFixed(1), canvasX + 10, canvasY + 5);
-        }
+        const canvasY = toCanvasY(y);
+        // Place marker at left of canvas if y-axis not visible, otherwise near y-axis
+        const markerX = (xMin <= 0 && xMax >= 0) ? toCanvasX(0) + 10 : padding - 25;
+        ctx.fillText(y.toFixed(1), markerX, canvasY + 5);
     }
 }
