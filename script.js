@@ -1,16 +1,23 @@
 document.getElementById('quadraticForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
+    const resultDiv = document.getElementById('result');
+    const solutionDiv = document.getElementById('solution');
+    
     // Get coefficient values
     const a = parseFloat(document.getElementById('a').value);
     const b = parseFloat(document.getElementById('b').value);
     const c = parseFloat(document.getElementById('c').value);
     
-    const resultDiv = document.getElementById('result');
-    const solutionDiv = document.getElementById('solution');
-    
     // Clear previous results
     solutionDiv.innerHTML = '';
+    
+    // Check for invalid input
+    if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        solutionDiv.innerHTML = '<p class="error">Error: Please enter valid numeric values for all coefficients.</p>';
+        resultDiv.classList.remove('hidden');
+        return;
+    }
     
     // Check if a is zero (not a quadratic equation)
     if (a === 0) {
