@@ -157,15 +157,11 @@ function drawGraph(a, b, c, discriminant) {
     
     // Helper function to convert math coordinates to canvas coordinates
     function toCanvasX(x) {
-        const range = xMax - xMin;
-        if (range === 0) return padding + (width - 2 * padding) / 2;
-        return padding + ((x - xMin) / range) * (width - 2 * padding);
+        return padding + ((x - xMin) / (xMax - xMin)) * (width - 2 * padding);
     }
     
     function toCanvasY(y) {
-        const range = yMax - yMin;
-        if (range === 0) return height - padding - (height - 2 * padding) / 2;
-        return height - padding - ((y - yMin) / range) * (height - 2 * padding);
+        return height - padding - ((y - yMin) / (yMax - yMin)) * (height - 2 * padding);
     }
     
     // Draw grid
