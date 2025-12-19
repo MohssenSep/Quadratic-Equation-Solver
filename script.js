@@ -269,4 +269,39 @@ function drawGraph(a, b, c, discriminant) {
         const markerX = (xMin <= 0 && xMax >= 0) ? toCanvasX(0) + 10 : padding - 25;
         ctx.fillText(y.toFixed(1), markerX, canvasY + 5);
     }
+
+    // --- Mouse hover for coordinates ---
+    const tooltip = document.getElementById('graphTooltip');
+    const graphContainer = document.getElementById('graphContainer');
+    // Remove previous listeners to avoid stacking
+    canvas.onmousemove = null;
+    canvas.onmouseleave = null;
+    canvas.addEventListener('mousemove', function (evt) {
+        // Use getBoundingClientRect for accurate mouse position
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (evt.clientX - rect.left) * scaleX;
+        const mouseY = (evt.clientY - rect.top) * scaleY;
+        // Only show tooltip if inside graph area (excluding padding)
+        if (
+            mouseX < padding || mouseX > width - padding ||
+            mouseY < padding || mouseY > height - padding
+        ) {
+            tooltip.style.display = 'none';
+            return;
+        }
+        // Convert to math coordinates
+        const x = xMin + ((mouseX - padding) / (width - 2 * padding)) * (xMax - xMin);
+        const y = yMax - ((mouseY - padding) / (height - 2 * padding)) * (yMax - yMin);
+        // Show tooltip
+        tooltip.style.display = 'block';
+        tooltip.textContent = `(${x.toFixed(2)}, ${y.toFixed(2)})`;
+        // Position tooltip absolutely inside graph container (use unscaled mouse position)
+        tooltip.style.left = ((evt.clientX - rect.left) + 20) + 'px';
+        tooltip.style.top = ((evt.clientY - rect.top) + 10) + 'px';
+    });
+    canvas.addEventListener('mouseleave', function () {
+        tooltip.style.display = 'none';
+    });
 }

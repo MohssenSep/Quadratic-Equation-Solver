@@ -1,3 +1,18 @@
+#graphTooltip {
+    position: absolute;
+    display: none;
+    background: #fff;
+    border: 1px solid #888;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    color: #222;
+    min-width: 70px;
+    text-align: center;
+}
 * {
     margin: 0;
     padding: 0;
@@ -128,6 +143,7 @@ input[type="number"]:focus {
 .graph-container {
     margin-top: 20px;
     text-align: center;
+    position: relative;
 }
 
 .graph-container h3 {
